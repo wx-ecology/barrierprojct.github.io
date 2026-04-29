@@ -1,0 +1,18 @@
+/* Global Barrier Project - light branding */
+:root {
+  --gb-accent: #2c5f4f;
+  --gb-muted: #6c7a76;
+}
+
+.navbar { border-bottom: 1px solid #e6e6e6; }
+.navbar-brand { font-weight: 600; letter-spacing: 0.2px; }
+
+/* Make Leaflet maps inside Quarto pages flush with text width */
+.leaflet-container { border-radius: 6px; }
+
+/* Subtle table styling for protocol page */
+table { font-size: 0.92rem; }
+table thead th { background: #f4f6f5; }
+
+/* De-emphasize footer */
+.page-footer { color: var(--gb-muted); font-size: 0.85rem; }

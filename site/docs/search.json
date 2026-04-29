@@ -1,0 +1,107 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Global Barrier Project",
+    "section": "",
+    "text": "We are assembling a global GPS tracking dataset for terrestrial mammals to test how linear infrastructure and other anthropogenic barriers reshape animal movement — from fine-scale behavioral responses to landscape-level connectivity loss.\nThe compiled archive currently spans 301 studies across 69 species and 60+ countries, contributed by collaborators worldwide.\nSee the study sites map → Read the data protocol →"
+  },
+  {
+    "objectID": "index.html#what-this-project-is",
+    "href": "index.html#what-this-project-is",
+    "title": "Global Barrier Project",
+    "section": "",
+    "text": "We are assembling a global GPS tracking dataset for terrestrial mammals to test how linear infrastructure and other anthropogenic barriers reshape animal movement — from fine-scale behavioral responses to landscape-level connectivity loss.\nThe compiled archive currently spans 301 studies across 69 species and 60+ countries, contributed by collaborators worldwide.\nSee the study sites map → Read the data protocol →"
+  },
+  {
+    "objectID": "index.html#why-now",
+    "href": "index.html#why-now",
+    "title": "Global Barrier Project",
+    "section": "Why now",
+    "text": "Why now\nLinear infrastructure — roads, fences, railways, pipelines — is expanding faster than our ability to measure its cumulative effect on wildlife movement. Single-study designs miss cross-system patterns. By harmonizing tracking data across species and biomes, we can ask:\n\nHow do barrier responses vary across taxa, body size, and movement strategy?\nWhere are the most permeable, and the most fragmented, landscapes?\nWhat management interventions have measurable effects?"
+  },
+  {
+    "objectID": "index.html#team-contributors",
+    "href": "index.html#team-contributors",
+    "title": "Global Barrier Project",
+    "section": "Team & contributors",
+    "text": "Team & contributors\nTo be added — please reach out if you’d like to contribute data or collaborate."
+  },
+  {
+    "objectID": "index.html#funding",
+    "href": "index.html#funding",
+    "title": "Global Barrier Project",
+    "section": "Funding",
+    "text": "Funding\nTo be added."
+  },
+  {
+    "objectID": "map.html",
+    "href": "map.html",
+    "title": "Study sites",
+    "section": "",
+    "text": "Species: All\n  Search: \n  \n\n\n\n\n\n\n\n\n\n\nTipHow this map is built\n\n\n\n\n\nLocations are loaded from data/studies_metadata.geojson, which is exported from map/studies_metadata.gpkg whenever the studies database is updated. To regenerate:\n# requires GDAL\nogr2ogr -f GeoJSON site/data/studies_metadata.geojson \\\n  \"map/studies_metadata.gpkg\" studies_metadata_sf\nOr in R:\nsf::st_read(\"map/studies_metadata.gpkg\") |&gt;\n  sf::st_write(\"site/data/studies_metadata.geojson\", delete_dsn = TRUE)"
+  },
+  {
+    "objectID": "protocol.html",
+    "href": "protocol.html",
+    "title": "Data Cleaning Protocol",
+    "section": "",
+    "text": "Note\n\n\n\nThe canonical protocol lives in pre-processing/data_cleaning_protocol.md. This page is rendered from that file — edit there, not here."
+  },
+  {
+    "objectID": "protocol.html#overview",
+    "href": "protocol.html#overview",
+    "title": "Data Cleaning Protocol",
+    "section": "Overview",
+    "text": "Overview\nThis protocol covers all steps between receipt of raw GPS tracking data from collaborators and the start of manuscript analyses. Each level produces a versioned output dataset. All decisions are logged in the cleaning metadata spreadsheet.\nResponsibility note: Verification of data integrity — correct species, individual identity, deployment dates, tag behavior — is the responsibility of the data collector/owner. Flagged issues must be resolved with the data provider before proceeding."
+  },
+  {
+    "objectID": "protocol.html#level-0-data-standardization",
+    "href": "protocol.html#level-0-data-standardization",
+    "title": "Data Cleaning Protocol",
+    "section": "Level 0 — Data Standardization",
+    "text": "Level 0 — Data Standardization\nEach study is processed into a standardized flat file saved as Study_name.csv in the Cleaned_data_L0/ folder. Completely duplicated datasets (same species, same study, redundant submissions from different collaborators) are not recorded in the cleaning metadata tab but are retained in the data provider contact sheet for reference.\nNaming convention: Study.name must be all lowercase, no spaces, underscores only (e.g., mule_deer_utah). For Movebank-sourced data, retain the original Movebank study ID/name. Confirm that names are unique and consistent across all tracking sheets before proceeding.\n\nRequired columns\nRetain all fields if provided. Contact the data owner if mandatory fields are absent.\n\n\n\n\n\n\n\n\nField\nMandatory\nNotes\n\n\n\n\nStudy.name\nYes\nBinomial or species name + study ID/name/location. Assigned by data cleaner if not from Movebank. Must be unique and consistent across sheets.\n\n\nBinomial\nYes\nSpecies-level identification. Contact data owner if missing.\n\n\ntrackID.original\nYes\nOriginal individual ID from the source dataset. Retained as-is; a new unique ID is assigned in Level 1.\n\n\nTimestampUTC\nYes\nVerify time zone conversion to UTC. Format: YYYY-MM-DD HH:MM:SS.\n\n\nLocation.long\nYes\nDecimal degrees, EPSG:4326.\n\n\nLocation.lat\nYes\nDecimal degrees, EPSG:4326.\n\n\nmovebank.id\nIf applicable\nFor Movebank-sourced data only.\n\n\nBodymass.kg\nIf provided\nConfirm units are kg.\n\n\nSex\nIf provided\n\n\n\nAge\nIf provided\nRecord as numerical age or life stage (e.g., adult, juvenile, calf).\n\n\nDOP\nIf provided\nNote whether HDOP, PDOP, or number of satellites — retain original field name and document in metadata.\n\n\nGroup.ID\nIf provided\ne.g., wolf packs, social groups.\n\n\nTemperature\nIf provided\n\n\n\nAdditional attributes\nIf provided\nRetain any other fields supplied by the data owner.\n\n\n\nCRS note: Standardize all coordinates to EPSG:4326 (WGS84) at this level, before any distance or speed calculations in subsequent steps. Speed is computed using distHaversine() (R package geosphere), which calculates great-circle distances in meters directly from decimal-degree coordinates — no intermediate reprojection is required."
+  },
+  {
+    "objectID": "protocol.html#level-1-rough-data-filtering-and-deduplication",
+    "href": "protocol.html#level-1-rough-data-filtering-and-deduplication",
+    "title": "Data Cleaning Protocol",
+    "section": "Level 1 — Rough Data Filtering and Deduplication",
+    "text": "Level 1 — Rough Data Filtering and Deduplication\nEach study is filtered individually and saved as Study_name_L1.csv. The output file retains only the following six columns: Study.name, Binomial, trackID.unique, TimestampUTC, Location.long, Location.lat.\n\nImportant: Apply steps in the order listed. Visualize the output after each step before proceeding (Gupte et al. 2022, §4.2). Do not thin or aggregate data before completing all filtering steps — thinning before error removal can bias speed estimates and preserve artifacts (Gupte et al. 2022, §6.2).\n\n\nStep 1.0 — Standardize study names\nConvert all Study.name values to lowercase, replace spaces with underscores, remove special characters.\n\n\nStep 1.1 — Remove invalid locations and timestamps\nFilter out:\n\nRecords with NA in Location.long, Location.lat, or TimestampUTC\nRecords where coordinates are exactly [0, 0] (common GPS artifact indicating failed fix)\nExact duplicate records (identical timestamp and coordinates for the same individual)\n\n\n\nStep 1.2 — Filter implausible timestamps\nRemove records with timestamps outside a biologically and logistically plausible range (e.g., future dates, dates preceding deployment, obvious data entry errors such as year = 2028). Document the bounds used in the cleaning metadata.\n\n\nStep 1.3 — Flag and filter unrealistic movement speeds\nCompute step-level instantaneous speed for each individual’s track using distHaversine() (R package geosphere), which returns distances in meters from decimal-degree coordinates. Divide by the elapsed time in seconds to obtain speed in m/s.\nFlag positions where both incoming and outgoing speed exceed a study-level threshold — targeting both directions avoids removing valid fast-transit segments (Bjørneraas et al. 2010; Gupte et al. 2022, §5.2). The threshold should be based on the known or published maximum movement speed for the focal species. If no species-specific value is available, use the 99th percentile of the study’s own speed distribution as a data-driven threshold, starting with a liberal (high) value to minimize over-filtering. Document the threshold used for each study in the cleaning metadata.\nRemove flagged positions with caution — review before deleting.\n\n\nStep 1.4 — Assign unique individual IDs\nCreate trackID.unique as a globally unique identifier within each species across all studies (e.g., Binomial_StudyName_originalID). The original ID is retained in trackID.original at Level 0.\n\n\nStep 1.5 — Resolve duplicate datasets\nIdentify cases where the same species in the same country appears in more than one submitted dataset (potential overlapping submissions). When confirmed duplicates exist, retain the dataset with the longer temporal coverage. Document the decision in the cleaning metadata and consult the data provider contact sheet before removing any dataset.\n\n\nStep 1.6 — Save Level 1 output\nSave each study as Study_name_L1.csv with only the six required columns listed above.\n\n\nStep 1.7 — Update cleaning metadata\nRecord results in the “Level 1 Study Metadata” tab:\n\nStudy name\nNumber of individuals before and after filtering\nDate range\nFix rate\nTotal records before and after each filter step\nFilter thresholds applied\nAny issues flagged"
+  },
+  {
+    "objectID": "protocol.html#level-2-visual-filtering-secondary-outlier-removal",
+    "href": "protocol.html#level-2-visual-filtering-secondary-outlier-removal",
+    "title": "Data Cleaning Protocol",
+    "section": "Level 2 — Visual Filtering (Secondary Outlier Removal)",
+    "text": "Level 2 — Visual Filtering (Secondary Outlier Removal)\nThis level applies human-in-the-loop visual inspection to catch errors that automated filters miss — particularly biologically implausible track segments, water incursion errors, and device artifacts such as prolonged displacement errors (consecutive erroneous positions that cannot be detected by point-level speed filters; Gupte et al. 2022, §5.2, Figure 3).\n\n⚠️ All flagging decisions require independent review by at least two team members before any deletion is made.\n\n\nStep 2.1 — Plot individual tracks\nFor each individual, generate a map of the movement track. The plot title must include: Binomial, trackID.unique, and the median fix interval. Retain all plots for documentation.\n\n\nStep 2.2 — Flag individuals with issues\nReviewers independently flag individuals with visible problems: positional outliers, implausible track segments, prolonged displacement errors, or geographic anomalies. Use the shared screenshots document to record and annotate complicated cases.\n\n\nStep 2.3 — Process by case type\n\nStraightforward cases (both reviewers agree)\n\nExport the individual track as a GeoPackage (.gpkg) to the designated GeoPackage folder.\nIn QGIS, delete obvious outliers manually.\nCheck all speed-flagged positions from Level 1 — delete with caution; retain points where the correct decision is ambiguous and note in cleaning metadata.\nWater point issue: Overlay points against permanent water body layers to determine whether a point is genuinely in permanent water. If the classification is uncertain, retain the point and note it in the cleaning metadata.\n\n\n\nAmbiguous cases (reviewers disagree, or additional data needed)\n\nDOP issue: Return to the original database to retrieve DOP values if not included in the Level 0 file. Re-evaluate the flagged point with this information.\nTimestamp issue: Return to the original database to verify the timestamp.\nDocument all ambiguous cases with screenshots and notes in the shared annotation document.\n\n\n\n\nStep 2.4 — Export and archive\nExport cleaned GeoPackages as CSV files with _L2 appended to the filename. Upload to the L2/ folder. Update the cleaning metadata record with the final individual count, number of records removed, and decision rationale.\n\n\nStep 2.5 — Column selection for L2 output\nRetain the core six columns from Level 1, plus any ancillary fields needed for downstream analyses (e.g., DOP, Sex, Age where available)."
+  },
+  {
+    "objectID": "protocol.html#study-specific-filters",
+    "href": "protocol.html#study-specific-filters",
+    "title": "Data Cleaning Protocol",
+    "section": "Study-Specific Filters",
+    "text": "Study-Specific Filters\nApply the following filter after Level 2 cleaning, as a final eligibility criterion before analysis:\nMinimum tracking duration and displacement filter (Tucker et al. 2018): Exclude individuals with fewer than 60 days of tracking data or fewer than 50 displacements. Document all exclusions in the cleaning metadata."
+  },
+  {
+    "objectID": "protocol.html#cleaning-metadata-and-contact-sheet",
+    "href": "protocol.html#cleaning-metadata-and-contact-sheet",
+    "title": "Data Cleaning Protocol",
+    "section": "Cleaning Metadata and Contact Sheet",
+    "text": "Cleaning Metadata and Contact Sheet\n\nCleaning metadata tab\nUpdated at each level. Records for each study:\n\nStudy name and data source\nCleaning level and date processed\nPersonnel\nFilter thresholds applied\nRecords before and after each filter\nFlagged issues and resolutions\n\n\n\nData provider contact sheet\nRetains: study name, final number of individuals included, approximate study centroid (lat/lon), contact name and email. Updated when datasets are excluded or issues require provider consultation. Completely duplicated datasets are logged here even if not in the cleaning metadata tab."
+  },
+  {
+    "objectID": "protocol.html#implementation-notes",
+    "href": "protocol.html#implementation-notes",
+    "title": "Data Cleaning Protocol",
+    "section": "Implementation Notes",
+    "text": "Implementation Notes\n\nFilters must be applied sequentially, not simultaneously, with a visual sanity check after each step (Gupte et al. 2022, §4.2).\nPre-processing code should be version-controlled (e.g., via Git) and documented to ensure reproducibility (Gupte et al. 2022, §2.2).\nProlonged displacement errors — consecutive erroneous positions that appear plausible individually — cannot be caught by point-level speed filters and are the primary target of Level 2 visual review (Gupte et al. 2022, §5.2).\nIf study locations are sensitive (e.g., endangered or poaching-risk species), display map centroids at the country or regional level rather than exact study coordinates. Check with data owners before publishing location information."
+  },
+  {
+    "objectID": "protocol.html#references",
+    "href": "protocol.html#references",
+    "title": "Data Cleaning Protocol",
+    "section": "References",
+    "text": "References\nBjørneraas, K., Van Moorter, B., Rolandsen, C. M., & Herfindal, I. (2010). Screening GPS location data for errors using animal movement characteristics. Journal of Wildlife Management, 74, 1361–1366.\nGupte, P. R., Beardsworth, C. E., Spiegel, O., Lourie, E., Toledo, S., Nathan, R., & Bijleveld, A. I. (2022). A guide to pre-processing high-throughput animal tracking data. Journal of Animal Ecology, 91, 287–307. https://doi.org/10.1111/1365-2656.13610\nLangley, L. P., Lang, S. D. J., Ozsanlav-Harris, L., & Trevail, A. M. (2024). ExMove: An open-source toolkit for processing and exploring animal-tracking data in R. Journal of Animal Ecology, 93, 1–12. https://doi.org/10.1111/1365-2656.14111\nTucker, M. A., et al. (2018). Moving in the Anthropocene: Global reductions in terrestrial mammalian movements. Science, 359, 466–469. https://doi.org/10.1126/science.aam9712"
+  }
+]

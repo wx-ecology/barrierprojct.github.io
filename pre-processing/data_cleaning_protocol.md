@@ -142,9 +142,13 @@ Retain the core six columns from Level 1, plus any ancillary fields needed for d
 
 ## Study-Specific Filters
 
+### Subproject - Settlement Configuration (Xu et al.)
+
 Apply the following filter after Level 2 cleaning, as a final eligibility criterion before analysis:
 
 **Minimum tracking duration and displacement filter** (Tucker et al. 2018): Exclude individuals with fewer than **60 days** of tracking data or fewer than **50 displacements**. Document all exclusions in the cleaning metadata.
+
+### Subproject - [TO BE UPDATED]
 
 ---
 

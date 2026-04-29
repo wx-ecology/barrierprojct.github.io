@@ -1,0 +1,35 @@
+project:
+  type: website
+  output-dir: docs   # GitHub Pages serves from /docs on main
+
+website:
+  title: "Global Barrier Project"
+  description: "GPS tracking data synthesis on barrier effects on terrestrial mammal movement."
+  site-url: "https://wx-ecology.github.io/barrierprojct.github.io/"
+  repo-url: "https://github.com/wx-ecology/barrierprojct.github.io"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Overview
+      - href: map.qmd
+        text: Study sites
+      - href: protocol.qmd
+        text: Data protocol
+    right:
+      - icon: github
+        href: https://github.com/wx-ecology/barrierprojct.github.io
+  page-footer:
+    center: "© Global Barrier Project · Last updated {{< meta date >}}"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    css: styles.css
+    link-external-newwindow: true
+    code-copy: true
+    smooth-scroll: true
+
+execute:
+  freeze: auto    # cache rendered chunks; only re-render on change

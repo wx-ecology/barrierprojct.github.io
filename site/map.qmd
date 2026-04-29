@@ -1,0 +1,163 @@
+---
+title: "Study sites"
+subtitle: "Locations of all GPS tracking studies in the synthesis"
+date: today
+format:
+  html:
+    page-layout: full
+---
+
+```{=html}
+<!-- Leaflet + MarkerCluster from CDN -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<style>
+  #gb-controls { display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; margin:0.5rem 0 0.75rem 0; font-size:0.92rem; }
+  #gb-controls input, #gb-controls select { padding:0.3rem 0.5rem; border:1px solid #ccc; border-radius:4px; }
+  #gb-controls .meta { color:#6c7a76; }
+  #gb-map { height: 78vh; width: 100%; border:1px solid #e2e2e2; border-radius:6px; }
+  .leaflet-popup-content { font-size: 0.9rem; line-height: 1.35; }
+  .leaflet-popup-content b { color:#2c5f4f; }
+</style>
+
+<div id="gb-controls">
+  <label>Species: <select id="gb-species"><option value="">All</option></select></label>
+  <label>Search: <input id="gb-search" type="text" placeholder="study or country" /></label>
+  <span class="meta" id="gb-count"></span>
+</div>
+<div id="gb-map"></div>
+
+<script>
+(function() {
+  const map = L.map('gb-map', { worldCopyJump: true }).setView([20, 10], 2);
+
+  // Two basemaps the user can toggle
+  const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18, attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  const esriTopo = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 18, attribution: 'Tiles © Esri' }
+  );
+  const esriImg = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 19, attribution: 'Tiles © Esri' }
+  );
+  L.control.layers(
+    { 'OpenStreetMap': osm, 'Esri Topographic': esriTopo, 'Esri Imagery': esriImg },
+    null, { position: 'topright', collapsed: true }
+  ).addTo(map);
+
+  const cluster = L.markerClusterGroup({
+    showCoverageOnHover: false,
+    spiderfyOnMaxZoom: true,
+    maxClusterRadius: 45
+  });
+
+  let allFeatures = [];
+  let currentSpecies = '';
+  let currentSearch  = '';
+
+  function popupHtml(p) {
+    const fmtNum = v => (v == null || isNaN(v)) ? '—' : Number(v).toLocaleString();
+    return `
+      <b>${p.study ?? 'unknown'}</b><br/>
+      <i>${p.species ?? ''}</i><br/>
+      Individuals: ${fmtNum(p.n_ind)} · Fixes: ${fmtNum(p.n_pts)}<br/>
+      Period: ${p.start ?? '?'} – ${p.end ?? '?'}<br/>
+      Median interval: ${p.interval_min == null ? '—' : p.interval_min + ' min'}<br/>
+      Country: ${p.countries ?? '—'} ${p.iso ? '(' + p.iso + ')' : ''}
+    `;
+  }
+
+  function passesFilter(p) {
+    if (currentSpecies && p.species !== currentSpecies) return false;
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
+      const hay = [p.study, p.species, p.countries, p.iso].filter(Boolean).join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  }
+
+  function render() {
+    cluster.clearLayers();
+    let n = 0;
+    for (const f of allFeatures) {
+      const p = f.properties;
+      if (!passesFilter(p)) continue;
+      const [lon, lat] = f.geometry.coordinates;
+      const m = L.circleMarker([lat, lon], {
+        radius: 6, color: '#2c5f4f', weight: 1, fillColor: '#2c5f4f', fillOpacity: 0.6
+      }).bindPopup(popupHtml(p));
+      cluster.addLayer(m);
+      n++;
+    }
+    map.addLayer(cluster);
+    document.getElementById('gb-count').textContent =
+      `${n} of ${allFeatures.length} studies shown`;
+  }
+
+  // Resolve data path relative to this page so it works in subdirs (project Pages site)
+  const dataUrl = new URL('data/studies_metadata.geojson', document.baseURI).href;
+
+  fetch(dataUrl)
+    .then(r => {
+      if (!r.ok) throw new Error('GeoJSON HTTP ' + r.status);
+      return r.json();
+    })
+    .then(geo => {
+      allFeatures = geo.features;
+
+      // Populate species dropdown
+      const sel = document.getElementById('gb-species');
+      const sp = [...new Set(allFeatures.map(f => f.properties.species).filter(Boolean))].sort();
+      for (const s of sp) {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        sel.appendChild(opt);
+      }
+      sel.addEventListener('change', e => { currentSpecies = e.target.value; render(); });
+      document.getElementById('gb-search').addEventListener('input', e => {
+        currentSearch = e.target.value; render();
+      });
+
+      // Fit to data bounds
+      const lats = allFeatures.map(f => f.geometry.coordinates[1]);
+      const lons = allFeatures.map(f => f.geometry.coordinates[0]);
+      map.fitBounds([[Math.min(...lats), Math.min(...lons)],
+                     [Math.max(...lats), Math.max(...lons)]], { padding:[20,20] });
+
+      render();
+    })
+    .catch(err => {
+      document.getElementById('gb-map').innerHTML =
+        '<div style="padding:1rem;color:#a00">Failed to load GeoJSON: ' + err.message + '</div>';
+    });
+})();
+</script>
+```
+
+::: {.callout-tip collapse="true"}
+## How this map is built
+
+Locations are loaded from `data/studies_metadata.geojson`, which is exported from
+`map/studies_metadata.gpkg` whenever the studies database is updated. To regenerate:
+
+```bash
+# requires GDAL
+ogr2ogr -f GeoJSON site/data/studies_metadata.geojson \
+  "map/studies_metadata.gpkg" studies_metadata_sf
+```
+
+Or in R:
+
+```r
+sf::st_read("map/studies_metadata.gpkg") |>
+  sf::st_write("site/data/studies_metadata.geojson", delete_dsn = TRUE)
+```
+:::

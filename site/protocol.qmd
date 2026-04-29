@@ -1,0 +1,12 @@
+---
+title: "Data Cleaning Protocol"
+subtitle: "Levels 0–2: standardization, deduplication, and quality control"
+date: today
+toc: true
+---
+
+::: {.callout-note}
+The canonical protocol lives in [`pre-processing/data_cleaning_protocol.md`](https://github.com/wx-ecology/barrierprojct.github.io/blob/main/pre-processing/data_cleaning_protocol.md). This page is rendered from that file — edit there, not here.
+:::
+
+{{< include ../pre-processing/data_cleaning_protocol.md >}}

@@ -81,7 +81,7 @@
     "href": "protocol.html#study-specific-filters",
     "title": "Data Cleaning Protocol",
     "section": "Study-Specific Filters",
-    "text": "Study-Specific Filters\nApply the following filter after Level 2 cleaning, as a final eligibility criterion before analysis:\nMinimum tracking duration and displacement filter (Tucker et al. 2018): Exclude individuals with fewer than 60 days of tracking data or fewer than 50 displacements. Document all exclusions in the cleaning metadata."
+    "text": "Study-Specific Filters\n\nSubproject - Settlement Configuration (Xu et al.)\nApply the following filter after Level 2 cleaning, as a final eligibility criterion before analysis:\nMinimum tracking duration and displacement filter (Tucker et al. 2018): Exclude individuals with fewer than 60 days of tracking data or fewer than 50 displacements. Document all exclusions in the cleaning metadata.\n\n\nSubproject - [TO BE UPDATED]"
   },
   {
     "objectID": "protocol.html#cleaning-metadata-and-contact-sheet",
